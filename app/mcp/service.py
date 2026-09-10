@@ -26,35 +26,74 @@ async def call_mcp_tools(
 
     results = {}
 
-    async with Client(SERVER_CONFIG) as client:
+    try:
+        async with Client(SERVER_CONFIG) as client:
 
-        if "weather" in tools:
-            weather = await client.call_tool(
-                "get_weather",
-                {
-                    "latitude": latitude,
-                    "longitude": longitude,
-                },
-            )
+            if "weather" in tools:
+                try:
+                    weather = await client.call_tool(
+                        "get_weather",
+                        {
+                            "latitude": latitude,
+                            "longitude": longitude,
+                        },
+                    )
 
-            results["weather"] = weather.data
+                    results["weather"] = weather.data
 
-        if "currency" in tools:
-            if amount is None:
-                results["currency"] = {
-                    "error": "Currency conversion requires an amount."
+                except Exception as error:
+                    results["weather"] = {
+                        "error": (
+                            "Weather MCP tool is currently unavailable."
+                        ),
+                        "details": str(error),
+                    }
+
+            if "currency" in tools:
+                if amount is None:
+                    results["currency"] = {
+                        "error": (
+                            "Currency conversion requires an amount."
+                        )
+                    }
+                else:
+                    try:
+                        currency = await client.call_tool(
+                            "convert_currency",
+                            {
+                                "amount": amount,
+                                "from_currency": from_currency,
+                                "to_currency": to_currency,
+                            },
+                        )
+
+                        results["currency"] = currency.data
+
+                    except Exception as error:
+                        results["currency"] = {
+                            "error": (
+                                "Currency MCP tool is currently unavailable."
+                            ),
+                            "details": str(error),
+                        }
+
+    except Exception as error:
+        for tool in tools:
+            if tool == "weather":
+                results["weather"] = {
+                    "error": (
+                        "Weather MCP service is currently unavailable."
+                    ),
+                    "details": str(error),
                 }
-            else:
-                currency = await client.call_tool(
-                    "convert_currency",
-                    {
-                        "amount": amount,
-                        "from_currency": from_currency,
-                        "to_currency": to_currency,
-                    },
-                )
 
-                results["currency"] = currency.data
+            elif tool == "currency":
+                results["currency"] = {
+                    "error": (
+                        "Currency MCP service is currently unavailable."
+                    ),
+                    "details": str(error),
+                }
 
     return results
 

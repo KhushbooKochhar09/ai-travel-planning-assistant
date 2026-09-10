@@ -14,7 +14,7 @@ def get_weather(latitude: float, longitude: float) -> dict:
         f"&longitude={longitude}"
         "&current=temperature_2m,precipitation,weather_code"
         "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
-        "&forecast_days=7"
+        "&forecast_days=16"
         "&timezone=auto"
     )
 

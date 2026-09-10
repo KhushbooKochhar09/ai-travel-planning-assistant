@@ -1,0 +1,27 @@
+import json
+from pathlib import Path
+
+from langchain_community.document_loaders import WebBaseLoader
+
+
+def load_sources():
+    """Load all configured travel sources as LangChain Documents."""
+
+    sources_file = Path("data/singapore/sources.json")
+
+    with open(sources_file, "r", encoding="utf-8") as file:
+        sources = json.load(file)["sources"]
+
+    documents = []
+
+    for source in sources:
+        loader = WebBaseLoader(source["url"])
+        loaded_documents = loader.load()
+
+        for document in loaded_documents:
+            document.metadata["source"] = source["title"]
+            document.metadata["url"] = source["url"]
+
+        documents.extend(loaded_documents)
+
+    return documents
