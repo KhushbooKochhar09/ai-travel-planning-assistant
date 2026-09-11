@@ -106,8 +106,9 @@ GROUNDING RULES:
 10. Use outdoor activities on days with more favourable weather
    when the context supports those activities.
 
-11. If rain probability is high, prefer an indoor activity ONLY
-   when the knowledge base explicitly supports an indoor option.
+11. If rain probability is 50% or higher, explicitly adjust the day's
+   recommendation rather than only reporting the weather. Prefer a
+   supported indoor or cultural activity from the knowledge base.
 
 12. Never assume that a location is indoor or outdoor based only
     on common knowledge.
@@ -179,12 +180,28 @@ as "not provided" unless the user specifically asked for weather.
 
 CONVERSATION HISTORY:
 {conversation_history}
+
 USER PREFERENCES:
-- Prioritize any explicit preferences from the conversation history.
-- For this itinerary, prioritize cultural experiences because the user
-  previously stated a preference for cultural experiences.
-- Only select cultural destinations that are supported by the retrieved
+- Identify and preserve explicit preferences from the conversation history.
+- If the user has expressed a cultural preference, prioritize cultural
+  experiences supported by the retrieved knowledge base.
+- If the user is travelling with family, prioritize family-suitable activities
+  when the retrieved knowledge base supports them.
+- If the user has expressed an outdoor preference, prioritize outdoor
+  activities when weather conditions allow and the knowledge base supports
+  them.
+- If the user has provided a budget, use the current MCP currency conversion
+  as the planning budget, but do not invent activity or travel costs.
+- Do not assume a preference that the user has not expressed.
+- Do not invent suitability, facilities, prices, or attractions that are not
+  supported by the retrieved knowledge base.
+- Never name or recommend an attraction, venue, mall, cultural center,
+  restaurant, facility, or activity unless it appears in the retrieved
   knowledge-base context.
+- If a suitable indoor alternative is not present in the knowledge base,
+  explicitly say that no supported indoor alternative is available.
+- Do not use phrases such as "family-friendly" or "suitable for families"
+  unless the retrieved knowledge-base context supports that claim.
 
 USER REQUEST:
 {question}
@@ -214,12 +231,20 @@ Create the itinerary using this structure:
 - **Recommendation:**
 - **Indoor alternative if supported:**
 
-### Knowledge-base Sources
-
-{source_text}
-
 FINAL VALIDATION:
+WEATHER ADJUSTMENT REQUIREMENT:
 
+For each day, explain how the weather affects the itinerary.
+
+If rain probability is 50% or higher and a supported indoor or
+cultural alternative exists in the knowledge base, prefer that
+alternative.
+
+If no supported indoor alternative exists, keep the supported
+activity and explicitly explain that the weather may affect it.
+
+Do not merely report the weather. The recommendation must reflect
+the weather conditions.
 Before producing the answer, perform these checks:
 
 1. For EVERY destination-specific statement, identify the exact
