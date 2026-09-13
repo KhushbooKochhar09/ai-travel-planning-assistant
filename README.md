@@ -1,6 +1,4 @@
-# ai-travel-planning-assistant
-AI Travel Planning Assistant
-=======
+
 # AI Travel Planning Assistant
 
 A context-aware travel assistant for Singapore. It answers destination questions
@@ -295,19 +293,3 @@ options are offered on high rain-chance days.*
 > Let's adjust Day 2 to focus on indoor activities... Singapore Science Centre in
 > the morning, Snow City for lunch, the Cloud Forest and Flower Dome at Gardens
 > by the Bay in the afternoon, and VivoCity in the evening.
-
-*The assistant keeps the earlier "three-day itinerary" and "young children"
-context and only changes Day 2 to indoor on the third turn.*
-
-## Assignment checklist
-
-- Knowledge base from 3 public Singapore resources
-- Embedding-based semantic retrieval with FAISS
-- Grounded answers with source references
-- Weather and currency through MCP tools
-- At least one combined RAG + MCP response
-- Multi-turn conversation with retained context
-- Intent-based tool selection
-- Clear handling of missing knowledge and tool failures
-- A simple Streamlit interface and automated tests
->>>>>>> 76efd6b (Update RAG pipeline, MCP router, planner, and assistant logic)
