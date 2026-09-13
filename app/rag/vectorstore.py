@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
@@ -25,8 +26,9 @@ def create_vectorstore(chunks):
     return vectorstore
 
 
+@lru_cache(maxsize=1)
 def load_vectorstore():
-    """Load the persisted Singapore FAISS vector store."""
+    """Load the persisted Singapore FAISS vector store (cached)."""
 
     embeddings = create_embeddings()
 

@@ -5,3 +5,6 @@ langchain-openai
 pypdf
 faiss-cpu
 python-dotenv
+streamlit
+fastmcp
+httpx

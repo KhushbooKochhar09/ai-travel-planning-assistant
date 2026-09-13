@@ -9,38 +9,83 @@ st.set_page_config(
     layout="centered",
 )
 
-st.title("✈️ Singapore AI Travel Assistant")
-st.caption("RAG-powered travel knowledge + current MCP information")
+
+EXAMPLE_QUESTIONS = [
+    ("Must-visit attractions", "What are the must-visit attractions in Singapore?"),
+    ("Culture & food areas", "Which neighbourhoods are best for culture and food?"),
+    ("Family activities", "Suggest fun activities for a family with children"),
+    ("This week's weather", "What's the weather in Singapore this week?"),
+    ("Budget in SGD + plan", "Convert ₹60,000 to SGD and suggest a 3-day itinerary"),
+    ("3-day weather-aware trip", "Plan a 3-day Singapore trip and adjust it to the weather forecast"),
+]
 
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "pending_question" not in st.session_state:
+    st.session_state.pending_question = None
 
+
+def submit_example(text):
+    """Queue an example question to be answered on the next rerun."""
+
+    st.session_state.pending_question = text
+
+
+# ---------------------------------------------------------------------------
+# Header
+# ---------------------------------------------------------------------------
+st.title("✈️ Singapore AI Travel Assistant")
+st.caption("Your smart guide for planning the perfect Singapore trip")
+
+
+# ---------------------------------------------------------------------------
+# Example questions (compact, always visible)
+# ---------------------------------------------------------------------------
+st.caption("💡 Quick ideas:")
+
+columns = st.columns(3)
+
+for index, (label, question_text) in enumerate(EXAMPLE_QUESTIONS):
+    columns[index % 3].button(
+        label,
+        key=f"example_{index}",
+        on_click=submit_example,
+        args=(question_text,),
+        use_container_width=True,
+    )
+
+
+def render_sources(sources):
+    """Render source references inside a collapsible section."""
+
+    if sources:
+        with st.expander("📚 Sources"):
+            for source in sources:
+                st.markdown(
+                    f"- [{source['title']}]({source['url']})"
+                )
+
+
+# ---------------------------------------------------------------------------
 # Display previous conversation
+# ---------------------------------------------------------------------------
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
         if message["role"] == "assistant":
-            if message.get("tools"):
-                st.caption(
-                    "Tools used: "
-                    + ", ".join(message["tools"])
-                )
-
-            if message.get("sources"):
-                with st.expander("📚 Knowledge-base sources"):
-                    for source in message["sources"]:
-                        st.markdown(
-                            f"- [{source['title']}]({source['url']})"
-                        )
+            render_sources(message.get("sources"))
 
 
-# Chat input
-question = st.chat_input(
-    "Ask me to plan your Singapore trip..."
-)
+# ---------------------------------------------------------------------------
+# Handle input (typed question or a clicked example)
+# ---------------------------------------------------------------------------
+typed_question = st.chat_input("Ask me to plan your Singapore trip...")
+
+question = typed_question or st.session_state.pending_question
+st.session_state.pending_question = None
 
 
 if question:
@@ -58,11 +103,7 @@ if question:
     # Build conversation history from previous turns
     conversation_history = []
 
-    for index in range(
-        0,
-        len(st.session_state.messages) - 1,
-        2,
-    ):
+    for index in range(0, len(st.session_state.messages) - 1, 2):
         user_message = st.session_state.messages[index]
         assistant_message = st.session_state.messages[index + 1]
 
@@ -75,7 +116,7 @@ if question:
 
     # Generate assistant response
     with st.chat_message("assistant"):
-        with st.spinner("Planning your trip..."):
+        with st.spinner("Putting together your travel plan..."):
             result = run_assistant(
                 question,
                 conversation_history=conversation_history,
@@ -88,36 +129,19 @@ if question:
 
         st.markdown(answer)
 
-        # Display selected tools
-        tools = result.get("selected_tools", [])
-
-        if tools:
-            st.caption(
-                "Tools used: "
-                + ", ".join(tools)
-            )
-
-        # Display RAG sources
         sources = []
-
         rag_result = result.get("rag")
 
         if rag_result:
             sources = rag_result.get("sources", [])
 
-        if sources:
-            with st.expander("📚 Knowledge-base sources"):
-                for source in sources:
-                    st.markdown(
-                        f"- [{source['title']}]({source['url']})"
-                    )
+        render_sources(sources)
 
     # Save assistant response to conversation
     st.session_state.messages.append(
         {
             "role": "assistant",
             "content": answer,
-            "tools": tools,
             "sources": sources,
         }
     )
